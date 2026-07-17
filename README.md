@@ -54,35 +54,29 @@ Your session (refresh token) is stored encrypted on your machine, so you won't n
 
 ## Distributing the app to other people
 
-For friends to just install and use the app (without creating their own Spotify app or touching `config.json`), the Client ID ships embedded in the installer. The Client ID **is not a secret** (this uses OAuth with PKCE, no client secret involved), so it's safe to include in the code you share.
+For friends to just install and use the app (without creating their own Spotify app or touching `config.json`), the Client ID ships embedded in the installer. The Client ID **is not a secret** (this uses OAuth with PKCE, no client secret involved) — it's even visible in the browser address bar during every login — but to keep it out of the git history anyway, it's injected at build time by a GitHub Actions workflow ([.github/workflows/release.yml](.github/workflows/release.yml)) instead of being committed in `src/default-config.js` (which stays blank in git).
 
-### 1. Fill in the distribution Client ID
-
-Edit [src/default-config.js](src/default-config.js) and paste the Client ID from your Spotify app (the same one from step 1 above):
-
-```js
-module.exports = {
-  clientId: 'YOUR_CLIENT_ID_HERE',
-  redirectPort: 8888,
-};
-```
-
-### 2. Add your friends in the Spotify Dashboard
+### 1. Add your friends in the Spotify Dashboard
 
 While your Spotify app is in **Development Mode** (the default), only users you explicitly add can use it — up to 25. In your app's dashboard → **User Management**, add each friend's Spotify account email. Without this, they'll get an error from Spotify when trying to log in, even with a correct Client ID.
 
-### 3. Build the installer
+### 2. Add the Client ID as a repository secret (one-time setup)
 
 ```bash
-npm run dist
+gh secret set SPOTIFY_CLIENT_ID --body "YOUR_CLIENT_ID_HERE"
 ```
 
-This produces `dist\Spotify Lyrics Setup 1.0.0.exe` — a standard, self-contained Windows (NSIS) installer that doesn't require Node or Electron on the target machine.
-
-### 4. Publish it to GitHub Releases
+### 3. Cut a release
 
 ```bash
-gh release create v1.0.0 "dist/Spotify Lyrics Setup 1.0.0.exe" --title "v1.0.0" --notes "First release"
+git tag v1.0.1
+git push origin v1.0.1
 ```
 
-(Requires the repo already pushed to GitHub and `gh` authenticated.) Your friends can then download the `.exe` from the repo's Releases page and install it like any other program.
+Pushing a tag matching `v*` triggers the workflow: it installs dependencies, bakes the Client ID from the secret into `src/default-config.js` (only inside the CI runner, never committed), builds the Windows installer with `electron-builder`, and publishes it as a GitHub Release with the `.exe` attached — automatically, from `git push` to a downloadable installer.
+
+Your friends can then download the `.exe` from the repo's Releases page and install it like any other program — no setup on their end.
+
+### Testing a packaged build locally
+
+To test `npm run dist` on your own machine without going through CI, temporarily paste your Client ID into `src/default-config.js`, build, test the installer — then revert the file (or just don't commit it) so the blank placeholder stays in git.
