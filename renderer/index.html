@@ -15,7 +15,18 @@
         </div>
         <div class="controls">
           <button id="login-btn" class="icon-btn" title="Connect to Spotify">⏻</button>
-          <button id="hide-btn" class="icon-btn" title="Hide">×</button>
+          <div class="theme-picker">
+            <button id="theme-btn" class="icon-btn" title="Background">🎨</button>
+            <div class="theme-popover hidden" id="theme-popover">
+              <button class="swatch swatch-dark" data-theme="dark" title="Dark"></button>
+              <button class="swatch swatch-midnight" data-theme="midnight" title="Midnight"></button>
+              <button class="swatch swatch-forest" data-theme="forest" title="Forest"></button>
+              <button class="swatch swatch-wine" data-theme="wine" title="Wine"></button>
+              <button class="swatch swatch-light" data-theme="light" title="Light"></button>
+            </div>
+          </div>
+          <button id="minimize-btn" class="icon-btn" title="Minimize">–</button>
+          <button id="close-btn" class="icon-btn" title="Quit">×</button>
         </div>
       </header>
 
@@ -23,6 +34,14 @@
         <div class="state-message" id="state-message">Connect your Spotify account to get started</div>
         <div class="lyrics" id="lyrics"></div>
       </div>
+
+      <div class="toast hidden" id="toast"></div>
+
+      <footer class="player-controls">
+        <button id="prev-btn" class="icon-btn control-btn" title="Previous">⏮</button>
+        <button id="play-pause-btn" class="icon-btn control-btn" title="Play/Pause">▶</button>
+        <button id="next-btn" class="icon-btn control-btn" title="Next">⏭</button>
+      </footer>
     </div>
 
     <script src="renderer.js"></script>

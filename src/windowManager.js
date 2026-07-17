@@ -2,7 +2,7 @@ const path = require('path');
 const { BrowserWindow, screen } = require('electron');
 const store = require('./store');
 
-const DEFAULT_BOUNDS = { width: 420, height: 160, x: undefined, y: undefined };
+const DEFAULT_BOUNDS = { width: 420, height: 210, x: undefined, y: undefined };
 const DEFAULT_OPACITY = 1;
 let win = null;
 let saveBoundsTimer = null;
@@ -36,13 +36,12 @@ function createWindow() {
   win = new BrowserWindow({
     ...boundsOpts,
     minWidth: 260,
-    minHeight: 90,
+    minHeight: 150,
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',
     hasShadow: false,
     resizable: true,
-    skipTaskbar: true,
     show: true,
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload.js'),
@@ -91,6 +90,11 @@ function setOpacity(value) {
   store.setSetting('opacity', clamped);
 }
 
+function minimize() {
+  if (!win || win.isDestroyed()) return;
+  win.minimize();
+}
+
 function toggleVisibility() {
   if (!win || win.isDestroyed()) {
     createWindow();
@@ -100,4 +104,4 @@ function toggleVisibility() {
   else win.show();
 }
 
-module.exports = { createWindow, getWindow, setClickThrough, setOpacity, toggleVisibility };
+module.exports = { createWindow, getWindow, setClickThrough, setOpacity, minimize, toggleVisibility };

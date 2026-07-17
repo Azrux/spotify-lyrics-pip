@@ -27,6 +27,15 @@ class SpotifyPoller extends EventEmitter {
     this.timer = null;
   }
 
+  // Re-polls right away instead of waiting for the natural interval — used
+  // after a manual play/pause/skip so the UI catches up to the real state
+  // faster than the normal 1s cadence would.
+  pollNow() {
+    if (this.stopped) return;
+    if (this.timer) clearTimeout(this.timer);
+    this._pollOnce();
+  }
+
   _scheduleNext(delayMs) {
     if (this.stopped) return;
     this.timer = setTimeout(() => this._pollOnce(), delayMs);

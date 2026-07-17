@@ -39,16 +39,20 @@ A green icon appears in the system tray along with a small floating window. Righ
 ## Usage
 
 - **Drag**: click and drag the top of the window to move it.
-- **Hide/show**: the "×" button or the tray icon.
+- **Playback controls**: prev / play-pause / next at the bottom remote-control whatever Spotify Connect device is currently active (phone, desktop app, speaker). **Requires Spotify Premium** — Spotify itself blocks these endpoints for Free accounts, and the app will show a toast ("Requires Spotify Premium") instead of failing silently.
+- **Background**: the 🎨 button opens a color picker (dark/midnight/forest/wine/light) for the panel background.
+- **Minimize**: the "–" button minimizes to the taskbar like a normal window (it no longer floats over other apps while minimized).
+- **Quit**: the "×" button now really quits the app. Use the tray icon (or minimize) if you just want it out of the way.
 - **Click-through**: from the tray menu, let clicks pass through the window (so it doesn't interfere with whatever's underneath).
 - **Opacity**: 40/70/100% presets from the tray menu.
-- **Quit**: only via "Quit" in the tray menu (the "×" button just hides the window).
 
 Your session (refresh token) is stored encrypted on your machine, so you won't need to log in again every time you open the app.
 
+> If you had already logged in before playback controls were added, you'll be asked to log in again once — the new controls need an extra permission (`user-modify-playback-state`) that older sessions don't have.
+
 ## Notes
 
-- Works with both Free and Premium accounts (only playback *read* access is needed, not control).
+- Reading what's playing works with both Free and Premium accounts. **Controlling** playback (play/pause/skip) requires Premium — that's a Spotify API restriction, not something this app can work around.
 - If a track isn't on lrclib.net, you'll see a notice — not every song has synced lyrics available.
 - The Client ID and tokens never reach the UI process (renderer); only Electron's main process talks to Spotify and lrclib.net.
 

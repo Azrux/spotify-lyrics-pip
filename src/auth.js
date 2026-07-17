@@ -4,7 +4,7 @@ const { EventEmitter } = require('events');
 const { shell } = require('electron');
 const store = require('./store');
 
-const SCOPES = 'user-read-currently-playing user-read-playback-state';
+const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
 const AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const TOKEN_EXPIRY_SAFETY_MS = 60_000;

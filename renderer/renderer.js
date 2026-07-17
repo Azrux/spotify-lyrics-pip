@@ -1,9 +1,17 @@
 const titleEl = document.getElementById('track-title');
 const artistEl = document.getElementById('track-artist');
 const loginBtn = document.getElementById('login-btn');
-const hideBtn = document.getElementById('hide-btn');
+const minimizeBtn = document.getElementById('minimize-btn');
+const closeBtn = document.getElementById('close-btn');
+const themeBtn = document.getElementById('theme-btn');
+const themePopover = document.getElementById('theme-popover');
+const swatchButtons = document.querySelectorAll('.swatch');
+const toastEl = document.getElementById('toast');
 const stateMessageEl = document.getElementById('state-message');
 const lyricsEl = document.getElementById('lyrics');
+const prevBtn = document.getElementById('prev-btn');
+const playPauseBtn = document.getElementById('play-pause-btn');
+const nextBtn = document.getElementById('next-btn');
 
 let isLoggedIn = false;
 let currentTrackId = null;
@@ -118,7 +126,82 @@ loginBtn.addEventListener('click', () => {
   else window.lyricsAPI.login();
 });
 
-hideBtn.addEventListener('click', () => window.lyricsAPI.hideWindow());
+minimizeBtn.addEventListener('click', () => window.lyricsAPI.minimizeWindow());
+closeBtn.addEventListener('click', () => window.lyricsAPI.quit());
+
+let toastTimer = null;
+function showToast(message) {
+  clearTimeout(toastTimer);
+  toastEl.textContent = message;
+  toastEl.classList.remove('hidden');
+  toastTimer = setTimeout(() => toastEl.classList.add('hidden'), 2600);
+}
+
+const CONTROL_ERROR_MESSAGES = {
+  premium_required: 'Requires Spotify Premium',
+  no_active_device: 'No active Spotify device',
+  needs_reauth: 'Please log in again',
+  logged_out: 'Connect your Spotify account first',
+  network_error: "Can't reach Spotify right now",
+  error: 'Something went wrong',
+};
+
+function handleControlResult(result) {
+  if (!result || result.ok) return;
+  showToast(CONTROL_ERROR_MESSAGES[result.reason] || CONTROL_ERROR_MESSAGES.error);
+}
+
+themeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  themePopover.classList.toggle('hidden');
+});
+
+document.addEventListener('click', () => themePopover.classList.add('hidden'));
+
+swatchButtons.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const theme = btn.dataset.theme;
+    applyTheme(theme);
+    window.lyricsAPI.setTheme(theme);
+    themePopover.classList.add('hidden');
+  });
+});
+
+function applyTheme(theme) {
+  if (theme === 'dark') document.body.removeAttribute('data-theme');
+  else document.body.setAttribute('data-theme', theme);
+}
+
+window.lyricsAPI.getTheme().then((theme) => applyTheme(theme));
+
+prevBtn.addEventListener('click', () => window.lyricsAPI.previous().then(handleControlResult));
+nextBtn.addEventListener('click', () => window.lyricsAPI.next().then(handleControlResult));
+
+// While this is in the future, poll ticks are ignored for the play/pause
+// icon specifically — Spotify's backend takes a beat to apply a command, so
+// a tick can land mid-flight still reporting the pre-command state and
+// flicker the icon back before the real update arrives.
+let iconOverrideUntil = 0;
+const ICON_OVERRIDE_MS = 2500;
+
+playPauseBtn.addEventListener('click', () => {
+  const wasPlaying = isPlaying;
+  updatePlayPauseIcon(!wasPlaying);
+  iconOverrideUntil = Date.now() + ICON_OVERRIDE_MS;
+  const action = wasPlaying ? window.lyricsAPI.pause() : window.lyricsAPI.play();
+  action.then((result) => {
+    if (!result.ok) {
+      iconOverrideUntil = 0;
+      updatePlayPauseIcon(wasPlaying);
+      handleControlResult(result);
+    }
+  });
+});
+
+function updatePlayPauseIcon(playing) {
+  playPauseBtn.textContent = playing ? '⏸' : '▶';
+}
 
 window.lyricsAPI.onAuthState(({ loggedIn }) => {
   isLoggedIn = loggedIn;
@@ -157,12 +240,14 @@ window.lyricsAPI.onPlaybackTick(({ isPlaying: playing, progressMs }) => {
   isPlaying = playing;
   baseProgressMs = progressMs;
   baseWallClockMs = Date.now();
+  if (Date.now() >= iconOverrideUntil) updatePlayPauseIcon(playing);
   if (playing) startInterpolation();
   else stopInterpolation();
 });
 
 window.lyricsAPI.onPlaybackIdle(({ reason }) => {
   isPlaying = false;
+  updatePlayPauseIcon(false);
   stopInterpolation();
   currentTrackId = null;
   resetLyricsView();

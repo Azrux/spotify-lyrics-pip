@@ -3,8 +3,10 @@ const { loadConfig } = require('./src/config');
 const { Auth } = require('./src/auth');
 const { SpotifyPoller } = require('./src/spotify');
 const { fetchLyricsForTrack } = require('./src/lyrics');
+const playbackControl = require('./src/playbackControl');
 const windowManager = require('./src/windowManager');
 const tray = require('./src/tray');
+const store = require('./src/store');
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -36,7 +38,27 @@ function wireIpc() {
   ipcMain.on('window:setClickThrough', (_e, value) => windowManager.setClickThrough(value));
   ipcMain.on('window:setOpacity', (_e, value) => windowManager.setOpacity(value));
   ipcMain.on('window:hide', () => windowManager.toggleVisibility());
+  ipcMain.on('window:minimize', () => windowManager.minimize());
   ipcMain.on('app:quit', () => app.quit());
+
+  const runControl = async (fn) => {
+    const result = await fn(auth);
+    if (result.ok) {
+      // Spotify's own backend needs a moment to apply the change before it
+      // shows up in currently-playing; polling instantly would often still
+      // read the pre-command state. A short delay avoids that race.
+      setTimeout(() => poller.pollNow(), 350);
+    }
+    return result;
+  };
+
+  ipcMain.handle('playback:play', () => runControl(playbackControl.play));
+  ipcMain.handle('playback:pause', () => runControl(playbackControl.pause));
+  ipcMain.handle('playback:next', () => runControl(playbackControl.next));
+  ipcMain.handle('playback:previous', () => runControl(playbackControl.previous));
+
+  ipcMain.handle('theme:get', () => store.getSetting('theme', 'dark'));
+  ipcMain.on('theme:set', (_e, theme) => store.setSetting('theme', theme));
 
   auth.on('state', (state) => send('auth:state', state));
 }

@@ -14,5 +14,14 @@ contextBridge.exposeInMainWorld('lyricsAPI', {
   setClickThrough: (value) => ipcRenderer.send('window:setClickThrough', value),
   setOpacity: (value) => ipcRenderer.send('window:setOpacity', value),
   hideWindow: () => ipcRenderer.send('window:hide'),
+  minimizeWindow: () => ipcRenderer.send('window:minimize'),
   quit: () => ipcRenderer.send('app:quit'),
+
+  play: () => ipcRenderer.invoke('playback:play'),
+  pause: () => ipcRenderer.invoke('playback:pause'),
+  next: () => ipcRenderer.invoke('playback:next'),
+  previous: () => ipcRenderer.invoke('playback:previous'),
+
+  getTheme: () => ipcRenderer.invoke('theme:get'),
+  setTheme: (theme) => ipcRenderer.send('theme:set', theme),
 });
