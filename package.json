@@ -1,6 +1,6 @@
 {
   "name": "spotify-lyrics-pip",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A floating, always-on-top window that syncs lyrics to whatever's playing on your Spotify account.",
   "author": "lausofimarce@gmail.com",
   "private": true,
