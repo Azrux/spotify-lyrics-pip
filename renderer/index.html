@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self';" />
+    <title>Spotify Lyrics</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="panel">
+      <header class="header">
+        <div class="track-info">
+          <div class="title" id="track-title">Spotify Lyrics</div>
+          <div class="artist" id="track-artist"></div>
+        </div>
+        <div class="controls">
+          <button id="login-btn" class="icon-btn" title="Conectar con Spotify">⏻</button>
+          <button id="hide-btn" class="icon-btn" title="Ocultar">×</button>
+        </div>
+      </header>
+
+      <div class="lyrics-wrap" id="lyrics-wrap">
+        <div class="state-message" id="state-message">Conecta tu cuenta de Spotify para empezar</div>
+        <div class="lyrics" id="lyrics"></div>
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

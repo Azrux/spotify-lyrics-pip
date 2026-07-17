@@ -1,0 +1,39 @@
+{
+  "name": "spotify-lyrics-pip",
+  "version": "1.0.0",
+  "description": "A floating, always-on-top window that syncs lyrics to whatever's playing on your Spotify account.",
+  "author": "lausofimarce@gmail.com",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^43.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.spotifylyricspip.app",
+    "productName": "Spotify Lyrics",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json",
+      "!config.json",
+      "!config.example.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}
