@@ -46,8 +46,8 @@ app.whenReady().then(async () => {
   try {
     config = loadConfig();
   } catch (err) {
-    // Sin config.json válido no podemos autenticar; mostramos el error en consola
-    // y dejamos la ventana vacía en vez de crashear silenciosamente.
+    // Without a valid config we can't authenticate; log the error and leave
+    // the window in its empty state instead of crashing silently.
     console.error(err.message);
     config = { clientId: '', redirectPort: 8888 };
   }
@@ -68,8 +68,9 @@ app.whenReady().then(async () => {
   });
 });
 
-// App de bandeja: al suscribirse a este evento sin llamar a app.quit(), Electron
-// no sale automáticamente al cerrar la ventana; solo se sale desde "Salir" del tray.
+// Tray app: subscribing to this event without calling app.quit() stops
+// Electron from auto-quitting when the window closes; quitting only happens
+// via "Quit" in the tray menu.
 app.on('window-all-closed', () => {});
 
 app.on('before-quit', () => {

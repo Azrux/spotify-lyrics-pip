@@ -10,10 +10,10 @@ const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const TOKEN_EXPIRY_SAFETY_MS = 60_000;
 
 const SUCCESS_HTML = `<!doctype html><html><body style="font-family:sans-serif;text-align:center;margin-top:15vh">
-<h2>Login con Spotify completado</h2><p>Ya puedes cerrar esta pestaña.</p></body></html>`;
+<h2>Spotify login complete</h2><p>You can close this tab now.</p></body></html>`;
 
 const ERROR_HTML = (msg) => `<!doctype html><html><body style="font-family:sans-serif;text-align:center;margin-top:15vh">
-<h2>Login falló</h2><p>${msg}</p><p>Puedes cerrar esta pestaña e intentar de nuevo.</p></body></html>`;
+<h2>Login failed</h2><p>${msg}</p><p>You can close this tab and try again.</p></body></html>`;
 
 class Auth extends EventEmitter {
   constructor(config) {
@@ -34,7 +34,7 @@ class Auth extends EventEmitter {
     this.emit('state', { loggedIn: this.isLoggedIn() });
   }
 
-  // Intenta recuperar sesión guardada al arrancar la app.
+  // Tries to restore a saved session on app startup.
   async init() {
     const stored = store.loadRefreshToken();
     if (!stored) {
@@ -45,7 +45,7 @@ class Auth extends EventEmitter {
     try {
       await this.refreshAccessToken();
     } catch (err) {
-      console.error('No se pudo restaurar la sesión guardada:', err.message);
+      console.error('Could not restore saved session:', err.message);
       this.refreshToken = null;
       store.clearRefreshToken();
     }
@@ -95,7 +95,7 @@ class Auth extends EventEmitter {
       body,
     });
     if (!res.ok) {
-      throw new Error(`Fallo al intercambiar el código por tokens (${res.status})`);
+      throw new Error(`Failed to exchange code for tokens (${res.status})`);
     }
     const data = await res.json();
     this._applyTokenResponse(data);
@@ -117,13 +117,13 @@ class Auth extends EventEmitter {
         if (error) {
           res.writeHead(200, { 'Content-Type': 'text/html' }).end(ERROR_HTML(error));
           server.close();
-          reject(new Error(`Spotify devolvió un error: ${error}`));
+          reject(new Error(`Spotify returned an error: ${error}`));
           return;
         }
         if (state !== expectedState) {
-          res.writeHead(200, { 'Content-Type': 'text/html' }).end(ERROR_HTML('state inválido'));
+          res.writeHead(200, { 'Content-Type': 'text/html' }).end(ERROR_HTML('invalid state'));
           server.close();
-          reject(new Error('El parámetro state no coincide (posible CSRF)'));
+          reject(new Error('The state parameter does not match (possible CSRF)'));
           return;
         }
         res.writeHead(200, { 'Content-Type': 'text/html' }).end(SUCCESS_HTML);
@@ -148,7 +148,7 @@ class Auth extends EventEmitter {
   }
 
   async refreshAccessToken() {
-    if (!this.refreshToken) throw new Error('No hay refresh token');
+    if (!this.refreshToken) throw new Error('No refresh token available');
     const body = new URLSearchParams({
       grant_type: 'refresh_token',
       refresh_token: this.refreshToken,
@@ -160,7 +160,7 @@ class Auth extends EventEmitter {
       body,
     });
     if (!res.ok) {
-      throw new Error(`Fallo al refrescar el token (${res.status})`);
+      throw new Error(`Failed to refresh token (${res.status})`);
     }
     const data = await res.json();
     this._applyTokenResponse(data);
@@ -173,7 +173,7 @@ class Auth extends EventEmitter {
       await this.refreshAccessToken();
       return this.accessToken;
     } catch (err) {
-      console.error('Refresh token inválido o revocado:', err.message);
+      console.error('Refresh token invalid or revoked:', err.message);
       this.logout();
       return null;
     }

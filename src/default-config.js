@@ -1,10 +1,10 @@
-// Client ID de la app de Spotify que se distribuye con el instalador.
-// No es un secreto (se usa OAuth PKCE, sin client secret), así que es seguro
-// dejarlo aquí y commitearlo. Complétalo antes de compilar el instalador
-// para tus amigos con "npm run dist" — ver README.md.
+// Client ID of the Spotify app bundled with the installer.
+// It's not a secret (this app uses OAuth PKCE, no client secret involved),
+// so it's safe to keep here and commit it. Fill it in before building the
+// installer for others with "npm run dist" — see README.md.
 //
-// Para desarrollo local puedes seguir usando config.json (gitignored) para
-// probar con tu propio Client ID sin tocar este archivo.
+// For local development you can still use config.json (gitignored) to test
+// with your own Client ID without touching this file.
 module.exports = {
   clientId: '',
   redirectPort: 8888,

@@ -109,7 +109,7 @@ function updateHeader(title, artist) {
 }
 
 function updateLoginUI() {
-  loginBtn.title = isLoggedIn ? 'Cerrar sesión' : 'Conectar con Spotify';
+  loginBtn.title = isLoggedIn ? 'Log out' : 'Connect to Spotify';
   loginBtn.style.color = isLoggedIn ? '#2ad64b' : '';
 }
 
@@ -127,7 +127,7 @@ window.lyricsAPI.onAuthState(({ loggedIn }) => {
     updateHeader('Spotify Lyrics', '');
     resetLyricsView();
     stopInterpolation();
-    setState('Conecta tu cuenta de Spotify para empezar');
+    setState('Connect your Spotify account to get started');
   }
 });
 
@@ -135,11 +135,11 @@ window.lyricsAPI.onTrackChanged((track) => {
   currentTrackId = track.trackId;
   updateHeader(track.title, track.artist);
   resetLyricsView();
-  setState('Cargando letras…');
+  setState('Loading lyrics…');
 });
 
 window.lyricsAPI.onLyricsLoaded((result) => {
-  if (result.trackId !== currentTrackId) return; // llegó tarde, ya cambió la canción
+  if (result.trackId !== currentTrackId) return; // arrived late, track already changed
   if (result.status === 'synced') {
     renderSyncedLines(result.lines);
   } else if (result.status === 'plain') {
@@ -149,7 +149,7 @@ window.lyricsAPI.onLyricsLoaded((result) => {
     setState('🎵 Instrumental');
   } else {
     resetLyricsView();
-    setState('No se encontraron letras para esta canción');
+    setState('No lyrics found for this track');
   }
 });
 
@@ -169,12 +169,12 @@ window.lyricsAPI.onPlaybackIdle(({ reason }) => {
   updateHeader('Spotify Lyrics', '');
 
   const messages = {
-    logged_out: 'Conecta tu cuenta de Spotify para empezar',
-    nothing_playing: 'Nada sonando ahora mismo',
-    ad: 'Anuncio en reproducción…',
-    offline: 'Sin conexión — reintentando…',
+    logged_out: 'Connect your Spotify account to get started',
+    nothing_playing: 'Nothing playing right now',
+    ad: 'Ad playing…',
+    offline: 'Offline — retrying…',
   };
-  setState(messages[reason] || 'Nada sonando ahora mismo');
+  setState(messages[reason] || 'Nothing playing right now');
 });
 
 window.lyricsAPI.getAuthState().then(({ loggedIn }) => {

@@ -49,7 +49,7 @@ class SpotifyPoller extends EventEmitter {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (err) {
-      console.error('Fallo de red consultando currently-playing:', err.message);
+      console.error('Network failure querying currently-playing:', err.message);
       this._handleNetworkFailure();
       return;
     }
@@ -61,8 +61,8 @@ class SpotifyPoller extends EventEmitter {
     }
 
     if (res.status === 401) {
-      // Token pudo revocarse justo entre polls; getValidAccessToken ya intentó
-      // refrescar, así que un 401 aquí se trata como sesión inválida.
+      // The token may have been revoked right between polls; getValidAccessToken
+      // already tried to refresh it, so a 401 here is treated as an invalid session.
       this.lastTrackId = null;
       this.emit('idle', { reason: 'logged_out' });
       this._scheduleNext(POLL_INTERVAL_MS);

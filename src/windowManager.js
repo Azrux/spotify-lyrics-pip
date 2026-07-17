@@ -26,7 +26,7 @@ function createWindow() {
   const opacity = store.getSetting('opacity', DEFAULT_OPACITY);
   const clickThrough = store.getSetting('clickThrough', false);
 
-  // Solo incluir x/y si son números reales; si no, Electron centra la ventana sola.
+  // Only include x/y when they're real numbers; otherwise Electron centers the window itself.
   const boundsOpts = { width: bounds.width, height: bounds.height };
   if (typeof bounds.x === 'number' && typeof bounds.y === 'number') {
     boundsOpts.x = bounds.x;

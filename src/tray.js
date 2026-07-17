@@ -4,7 +4,7 @@ const windowManager = require('./windowManager');
 
 let tray = null;
 
-// Genera un icono simple (círculo verde) en memoria, sin depender de archivos externos.
+// Generates a simple icon (green circle) in memory, without depending on external files.
 function buildTrayIcon() {
   const size = 16;
   const buffer = Buffer.alloc(size * size * 4); // BGRA
@@ -42,19 +42,19 @@ function buildMenu(auth) {
 
   return Menu.buildFromTemplate([
     {
-      label: loggedIn ? 'Cerrar sesión de Spotify' : 'Iniciar sesión con Spotify',
+      label: loggedIn ? 'Log out of Spotify' : 'Log in with Spotify',
       click: () => (loggedIn ? auth.logout() : auth.login().catch((err) => console.error(err))),
     },
     { type: 'separator' },
-    { label: 'Mostrar/Ocultar ventana', click: () => windowManager.toggleVisibility() },
+    { label: 'Show/Hide window', click: () => windowManager.toggleVisibility() },
     {
-      label: 'Click-through (dejar pasar clics)',
+      label: 'Click-through (let clicks pass through)',
       type: 'checkbox',
       checked: clickThrough,
       click: (item) => windowManager.setClickThrough(item.checked),
     },
     {
-      label: 'Opacidad',
+      label: 'Opacity',
       submenu: [0.4, 0.7, 1].map((value) => ({
         label: `${Math.round(value * 100)}%`,
         type: 'radio',
@@ -63,7 +63,7 @@ function buildMenu(auth) {
       })),
     },
     { type: 'separator' },
-    { label: 'Salir', click: () => app.quit() },
+    { label: 'Quit', click: () => app.quit() },
   ]);
 }
 

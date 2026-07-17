@@ -34,11 +34,11 @@ function writeDiskCache(trackId, result) {
   try {
     fs.writeFileSync(cacheFilePath(trackId), JSON.stringify(result), 'utf-8');
   } catch (err) {
-    console.error('No se pudo escribir la caché de letras:', err.message);
+    console.error('Could not write lyrics cache:', err.message);
   }
 }
 
-// Convierte texto LRC (syncedLyrics) en [{ timeSec, text }], ordenado por tiempo.
+// Converts LRC text (syncedLyrics) into [{ timeSec, text }], sorted by time.
 function parseLRC(lrc) {
   const timeTagRe = /\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]/g;
   let offsetMs = 0;
@@ -63,7 +63,7 @@ function parseLRC(lrc) {
       timestamps.push(parseInt(match[1], 10) * 60 + parseInt(match[2], 10) + frac);
       lastIndex = timeTagRe.lastIndex;
     }
-    if (timestamps.length === 0) continue; // línea de metadata sin timestamp ([ar:], [ti:], etc.)
+    if (timestamps.length === 0) continue; // metadata line without a timestamp ([ar:], [ti:], etc.)
 
     const text = line.slice(lastIndex).trim();
     for (const t of timestamps) {
@@ -82,7 +82,7 @@ function classify(data) {
       const lines = parseLRC(data.syncedLyrics);
       if (lines.length > 0) return { status: 'synced', lines };
     } catch (err) {
-      console.error('Error parseando LRC, cayendo a texto plano:', err.message);
+      console.error('Error parsing LRC, falling back to plain text:', err.message);
     }
   }
   if (data.plainLyrics) return { status: 'plain', text: data.plainLyrics };
@@ -96,7 +96,7 @@ async function queryLrclib(params) {
   }
   const res = await fetch(url);
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`lrclib /get devolvió ${res.status}`);
+  if (!res.ok) throw new Error(`lrclib /get returned ${res.status}`);
   return res.json();
 }
 
@@ -106,7 +106,7 @@ async function searchLrclib(params) {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   }
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`lrclib /search devolvió ${res.status}`);
+  if (!res.ok) throw new Error(`lrclib /search returned ${res.status}`);
   const results = await res.json();
   if (!Array.isArray(results) || results.length === 0) return null;
   const withSync = results.find((r) => r.syncedLyrics);
@@ -135,7 +135,7 @@ async function fetchLyricsForTrack({ trackId, title, artist, album, durationMs }
       raw = await searchLrclib({ track_name: title, artist_name: artist });
     }
   } catch (err) {
-    console.error('Fallo consultando lrclib.net:', err.message);
+    console.error('Failed querying lrclib.net:', err.message);
     return { status: 'not_found' };
   }
 
