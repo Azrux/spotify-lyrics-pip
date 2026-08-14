@@ -14,6 +14,7 @@ if (!app.requestSingleInstanceLock()) {
 
 let auth;
 let poller;
+let lastDeviceId = null;
 
 function send(channel, payload) {
   const win = windowManager.getWindow();
@@ -21,8 +22,14 @@ function send(channel, payload) {
 }
 
 function wireSpotifyEvents() {
-  poller.on('idle', (payload) => send('playback:idle', payload));
-  poller.on('tick', (payload) => send('playback:tick', payload));
+  poller.on('idle', (payload) => {
+    lastDeviceId = null;
+    send('playback:idle', payload);
+  });
+  poller.on('tick', (payload) => {
+    if (payload.deviceId) lastDeviceId = payload.deviceId;
+    send('playback:tick', payload);
+  });
   poller.on('trackChanged', async (track) => {
     send('track:changed', track);
     const lyrics = await fetchLyricsForTrack(track);
@@ -42,7 +49,7 @@ function wireIpc() {
   ipcMain.on('app:quit', () => app.quit());
 
   const runControl = async (fn) => {
-    const result = await fn(auth);
+    const result = await fn(auth, lastDeviceId);
     if (result.ok) {
       // Spotify's own backend needs a moment to apply the change before it
       // shows up in currently-playing; polling instantly would often still

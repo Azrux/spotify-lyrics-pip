@@ -13,6 +13,7 @@ class SpotifyPoller extends EventEmitter {
     this.consecutiveFailures = 0;
     this.stopped = true;
     this.timer = null;
+    this.inFlight = false;
   }
 
   start() {
@@ -43,7 +44,26 @@ class SpotifyPoller extends EventEmitter {
 
   async _pollOnce() {
     if (this.stopped) return;
+    // clearTimeout can't cancel a poll that's already mid-flight (e.g. when
+    // pollNow() fires right as the regular interval was about to run) —
+    // without this guard the two could race and let a stale response
+    // overwrite a newer one out of order.
+    if (this.inFlight) return;
+    this.inFlight = true;
+    try {
+      await this._pollOnceInner();
+    } catch (err) {
+      // A silent throw here would kill the polling loop for good (nothing
+      // left to call _scheduleNext) — always fall back to the same backoff
+      // path as a network failure instead of freezing the UI forever.
+      console.error('Unexpected error while polling currently-playing:', err);
+      this._handleNetworkFailure();
+    } finally {
+      this.inFlight = false;
+    }
+  }
 
+  async _pollOnceInner() {
     const token = await this.auth.getValidAccessToken();
     if (!token) {
       this.lastTrackId = null;
@@ -52,6 +72,7 @@ class SpotifyPoller extends EventEmitter {
       return;
     }
 
+    const requestStartMs = Date.now();
     let res;
     try {
       res = await fetch(CURRENTLY_PLAYING_URL, {
@@ -123,10 +144,21 @@ class SpotifyPoller extends EventEmitter {
       });
     }
 
+    // progress_ms reflects Spotify's playback position at the moment their
+    // server handled the request, not when we received the response. Add
+    // back roughly half the round-trip so "now" lines up with reality —
+    // otherwise the estimate is always a bit stale, and on tracks with
+    // closely-packed lines that's enough to highlight the previous one.
+    const roundTripMs = Date.now() - requestStartMs;
+    const adjustedProgressMs = data.is_playing
+      ? data.progress_ms + Math.round(roundTripMs / 2)
+      : data.progress_ms;
+
     this.emit('tick', {
       isPlaying: data.is_playing,
-      progressMs: data.progress_ms,
+      progressMs: adjustedProgressMs,
       trackId,
+      deviceId: data.device ? data.device.id : null,
       serverTimeMs: Date.now(),
     });
 
